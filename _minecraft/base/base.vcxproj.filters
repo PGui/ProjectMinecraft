@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\src\main.cpp" />
+    <ClCompile Include="..\..\_engine\src\engine\render\renderer.cpp">
+      <Filter>engine\render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\_engine\src\engine\log\log.cpp">
+      <Filter>engine\log</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\chunk.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="engine">
+      <UniqueIdentifier>{ae4e05d4-a1d7-4a08-b636-e63623fdf46f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="engine\render">
+      <UniqueIdentifier>{a376097d-3850-4557-a4c2-fca1449830df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="engine\log">
+      <UniqueIdentifier>{0a822301-530a-4ea3-9539-50b080a3d8da}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\_engine\src\engine\render\renderer.h">
+      <Filter>engine\render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_engine\src\engine\log\log.h">
+      <Filter>engine\log</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_engine\src\engine\log\log_console.h">
+      <Filter>engine\log</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_engine\src\engine\log\log_file.h">
+      <Filter>engine\log</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\_engine\src\engine\render\camera.h">
+      <Filter>engine\render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\world.h" />
+    <ClInclude Include="..\src\chunk.h" />
+    <ClInclude Include="..\src\cube.h" />
+    <ClInclude Include="..\src\avatar.h" />
+  </ItemGroup>
+</Project>
