@@ -6,6 +6,7 @@
 #include "engine/utils/types_3d.h"
 #include "cube.h"
 #include "chunk.h"
+#include "my_physics.h"
 
 
 typedef uint8 NYCollision;
@@ -379,10 +380,45 @@ public :
 		add_world_to_vbo();
 	}
 
+	bool intersectDroiteCube(NYVert3Df A, NYVert3Df B, NYVert3Df C, NYVert3Df D, NYVert3Df pointA, NYVert3Df pointB)
+	{
+		NYVert3Df P;
+
+		if (intersectionLinePlan(pointA, pointB, B - A, C - A, A))
+		{
+			NYVert3Df AB = B - A;
+			NYVert3Df AP = P - A;
+
+			NYVert3Df BC = C - B;
+			NYVert3Df BP = P - B;
+
+			NYVert3Df CD = D - C;
+			NYVert3Df CP = P - C;
+
+			NYVert3Df DA = A - D;
+			NYVert3Df DP = P - D;
+
+			NYVert3Df n1 = AB.vecProd(AP);
+			NYVert3Df n2 = BC.vecProd(BP);
+			NYVert3Df n3 = CD.vecProd(CP);
+			NYVert3Df n4 = DA.vecProd(DP);
+
+			if (n1.scalProd(n2) > 0 && n2.scalProd(n3) > 0 && n3.scalProd(n4) && n4.scalProd(n1) > 0)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	NYCube * pick(NYVert3Df  pos, NYVert3Df  dir, NYPoint3D * point)
 	{
+
 		return NULL;
 	}
+
+	
 
 
 	bool CubeCubeCollision(NYVert3Df pos, NYVert3Df posCube, float cubeSize)

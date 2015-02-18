@@ -29,7 +29,11 @@ public:
 
 	bool Standing;
 
-	bool clicked = false;
+	bool picking = false;
+	NYVert3Df pickA;
+	NYVert3Df pickB;
+	bool drawSphere = false;
+	NYVert3Df posDrawSphere;
 
 	NYCamera * Cam;
 	NYWorld * World;
@@ -57,14 +61,22 @@ public:
 		glTranslated(Position.X, Position.Y, Position.Z);
 		glutSolidCube(Width / 2);
 		glPopMatrix();*/
-		if (clicked)
+		if (picking)
 		{
-			NYVert3Df pos = Position + Cam->_Direction*5.0f;
+			
 			glBegin(GL_LINES);
 			glColor3d(1, 0, 0);
-			glVertex3d(Position.X, Position.Y, Position.Z-0.2f);
-			glVertex3d(pos.X, pos.Y, pos.Z);
+			glVertex3d(pickA.X,pickA.Y, pickA.Z);
+			glVertex3d(pickB.X, pickB.Y, pickB.Z);
 			glEnd();
+
+			if (drawSphere){
+				glPushMatrix();
+				glTranslated(posDrawSphere.X, posDrawSphere.Y, posDrawSphere.Z);
+				glutSolidSphere(1.0f, 10, 10);
+				glPopMatrix();
+			}
+				
 		}
 	}
 
@@ -87,6 +99,25 @@ public:
 		}
 	}
 
+	void pick()
+	{
+		int radiusTest = 2;
+		for (int x = (int)Position.X - radiusTest; x < (int)Position.X + radiusTest; ++x)
+		{
+			for (int y = (int)Position.Y - radiusTest; y < (int)Position.Y + radiusTest; ++y)
+			{
+				for (int z = (int)Position.Z - radiusTest; z < (int)Position.Z + radiusTest; ++z)
+				{
+
+					if (intersectionLinePlan(pickA, pickB, NYVert3Df(0, 0, 1), NYVert3Df(x, y, z + 0.5f), posDrawSphere))
+					{
+						drawSphere = true;
+						cout << "Found something in " << posDrawSphere.X << " ," << posDrawSphere.Y << " ," << posDrawSphere.Z << endl;
+					}
+				}
+			}
+		}
+	}
 
 
 	void update(float elapsed)
@@ -149,6 +180,20 @@ public:
 		ApplyGravity();
 
 */
+
+
+		if (picking)
+		{
+			
+			pickA = NYVert3Df(Position.X, Position.Y, Position.Z - 0.2f);
+			pickB = Position + Cam->_Direction*15.0f;
+			pick();
+		}
+		else
+		{
+			drawSphere = false;
+		}
+
 		Cam->moveTo(Position);
 		//Par defaut, on applique la gravité (-100 sur Z)
 		NYVert3Df force = NYVert3Df(0, 0, -1) * 100.0f;

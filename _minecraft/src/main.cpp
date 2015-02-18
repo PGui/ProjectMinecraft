@@ -21,6 +21,8 @@
 //Pour avoir l'avatr
 #include "avatar.h"
 
+#include "my_physics.h"
+
 //Variable globale
 NYWorld * g_world;
 
@@ -596,19 +598,21 @@ void mouseFunction(int button, int state, int x, int y)
 
 	bool mouseTraite = false;
 	mouseTraite = g_screen_manager->mouseCallback(x, y, g_mouse_btn_gui_state, 0, 0);
+
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+	{
+		g_Avatar->picking = true;
+	}
+	else
+	{
+		g_Avatar->picking = false;
+	}
 }
 
 void mouseMoveFunction(int x, int y, bool pressed)
 {
 
-	if (pressed)
-	{
-		g_Avatar->clicked = true;
-	}
-	else
-	{
-		g_Avatar->clicked = false;
-	}
+	
 
 
 	bool mouseTraite = false;
@@ -883,6 +887,8 @@ int main(int argc, char* argv[])
 
 	//On start
 	g_timer->start();
+
+	
 
 	glutMainLoop();
 
