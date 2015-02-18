@@ -18,6 +18,9 @@
 //Pour avoir le monde
 #include "world.h"
 
+//Pour avoir l'avatr
+#include "avatar.h"
+
 //Variable globale
 NYWorld * g_world;
 
@@ -53,6 +56,9 @@ GUIScreen * g_screen_params = NULL;
 GUIScreen * g_screen_jeu = NULL;
 GUISlider * g_slider;
 
+//Avatar
+NYAvatar * g_Avatar = NULL;
+
 
 //////////////////////////////////////////////////////////////////////////
 // GESTION APPLICATION
@@ -66,7 +72,7 @@ void update(void)
 	//Calcul des fps
 	g_elapsed_fps += elapsed;
 	g_nb_frames++;
-	if(g_elapsed_fps > 1.0)
+	if (g_elapsed_fps > 1.0)
 	{
 		LabelFps->Text = std::string("FPS : ") + toString(g_nb_frames);
 		g_elapsed_fps -= 1.0f;
@@ -75,6 +81,9 @@ void update(void)
 
 	//Rendu
 	g_renderer->render(elapsed);
+
+	//Update avatar
+	g_Avatar->update(elapsed);
 }
 
 
@@ -182,16 +191,10 @@ void renderObjects(void)
 	GLfloat mShininess = 100;
 	glMaterialf(GL_FRONT, GL_SHININESS, mShininess);
 
-	
-
-
-
-
 	//RENDER THE SUN
 	////Time of the day
 	//NYColor colorDay (0, 181.f / 255.f, 221.f / 255.f, 1);
 	//NYColor colorNight(0.2f, 0.1f, 0.1f, 1);
-
 	//NYColor currentColor = colorNight.interpolate(colorDay, cos(NYRenderer::_DeltaTimeCumul / g_dayDuration) *0.5f + 0.5f);
 	//g_renderer->setBackgroundColor(currentColor);
 	//
@@ -201,42 +204,35 @@ void renderObjects(void)
 	////Diffuse
 	//GLfloat materialDiffuseSun[] = { currentColor.R, currentColor.V, currentColor.B, 1.0 };
 	//glMaterialfv(GL_FRONT, GL_DIFFUSE, materialDiffuseSun);
-
 	////Ambient
 	//GLfloat materialAmbientSun[] = { currentColor.R, currentColor.V, currentColor.B, 1.0 };
 	//glMaterialfv(GL_FRONT, GL_AMBIENT, materialAmbientSun);
-
 	////Emissive
 	//GLfloat emissive[] = { 1.0, 0.0, 0.0, 1.0 };
 	//glMaterialfv(GL_FRONT, GL_EMISSION, emissive);
-
 	//glColor4d(currentColor.R, currentColor.B, currentColor.V, currentColor.A);
 	//glRotated((NYRenderer::_DeltaTimeCumul / g_dayDuration / (2.f * M_PI))*360.0f - 90.0f, 0.0, 1.0, 0.0f);
 	//glTranslated(g_sunPosition.X, g_sunPosition.Y, g_sunPosition.Z);
 	//glutSolidSphere(1, 20, 20);
-
 	//GLfloat emissiveNeutral[] = { 0.0, 0.0, 0.0, 1.0 };
 	//glMaterialfv(GL_FRONT, GL_EMISSION, emissiveNeutral);
-
 	//glPopMatrix();
 
 
-
-
 	//Rendu des axes
-	glDisable(GL_LIGHTING);
+	/*glDisable(GL_LIGHTING);
 
 	glBegin(GL_LINES);
-	glColor3d(1,0,0);
-	glVertex3d(0,0,0);
-	glVertex3d(10000,0,0);
-	glColor3d(0,1,0);
-	glVertex3d(0,0,0);
-	glVertex3d(0,10000,0);
-	glColor3d(0,0,1);
-	glVertex3d(0,0,0);
-	glVertex3d(0,0,10000);
-	glEnd();
+	glColor3d(1, 0, 0);
+	glVertex3d(0, 0, 0);
+	glVertex3d(10000, 0, 0);
+	glColor3d(0, 1, 0);
+	glVertex3d(0, 0, 0);
+	glVertex3d(0, 10000, 0);
+	glColor3d(0, 0, 1);
+	glVertex3d(0, 0, 0);
+	glVertex3d(0, 0, 10000);
+	glEnd();*/
 
 	//glEnable(GL_LIGHTING);
 	//glShadeModel(GL_SMOOTH);
@@ -285,6 +281,8 @@ void renderObjects(void)
 	g_world->render_world_vbo();
 	glPopMatrix();
 
+	//RENDER THE AVATR
+	g_Avatar->render();
 
 	////Rotation du cube
 	//glRotatef(NYRenderer::_DeltaTimeCumul * 100,
@@ -393,13 +391,13 @@ void setLights(void)
 	//On définit une lumière directionelle (un soleil)
 	//float direction[4] = {0,0,7,0}; ///w = 0 donc elle est a l'infini
 	float direction[4] = { cos(NYRenderer::_DeltaTimeCumul / g_dayDuration), 0, -sin(NYRenderer::_DeltaTimeCumul / g_dayDuration), 0 };
-	glLightfv(GL_LIGHT0, GL_POSITION, direction );
-	float color[4] = {0.5f,0.5f,0.5f};
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, color );
-	float color2[4] = {0.3f,0.3f,0.3f};
-	glLightfv(GL_LIGHT0, GL_AMBIENT, color2 );
-	float color3[4] = {0.3f,0.3f,0.3f};
-	glLightfv(GL_LIGHT0, GL_SPECULAR, color3 );
+	glLightfv(GL_LIGHT0, GL_POSITION, direction);
+	float color[4] = { 0.5f, 0.5f, 0.5f };
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, color);
+	float color2[4] = { 0.3f, 0.3f, 0.3f };
+	glLightfv(GL_LIGHT0, GL_AMBIENT, color2);
+	float color3[4] = { 0.3f, 0.3f, 0.3f };
+	glLightfv(GL_LIGHT0, GL_SPECULAR, color3);
 
 
 }
@@ -407,7 +405,7 @@ void setLights(void)
 void resizeFunction(int width, int height)
 {
 	glViewport(0, 0, width, height);
-	g_renderer->resize(width,height);
+	g_renderer->resize(width, height);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -416,8 +414,10 @@ void resizeFunction(int width, int height)
 
 void specialDownFunction(int key, int p1, int p2)
 {
+
+
 	//On change de mode de camera
-	if(key == GLUT_KEY_LEFT)
+	if (key == GLUT_KEY_LEFT)
 	{
 		std::cout << "LEFT" << std::endl;
 		//Rotate 
@@ -426,7 +426,7 @@ void specialDownFunction(int key, int p1, int p2)
 		//Rotate Around
 		g_renderer->_Camera->rotateAround(g_slider->Value);
 
-		
+
 	}
 
 	if (key == GLUT_KEY_RIGHT)
@@ -457,6 +457,7 @@ void specialDownFunction(int key, int p1, int p2)
 		g_renderer->_Camera->rotateUpAround(-g_slider->Value);
 	}
 
+
 }
 
 void specialUpFunction(int key, int p1, int p2)
@@ -466,73 +467,150 @@ void specialUpFunction(int key, int p1, int p2)
 
 void keyboardDownFunction(unsigned char key, int p1, int p2)
 {
-	if(key == VK_ESCAPE)
+	//Control Avatar
+	//Avancer
+	if (key == 'z')
 	{
-		glutDestroyWindow(g_main_window_id);	
+		g_Avatar->avance = true;
+	}
+
+	//Reculer
+	if (key == 's')
+	{
+		g_Avatar->recule = true;
+	}
+
+	//gauche
+	if (key == 'q')
+	{
+		g_Avatar->gauche = true;
+	}
+
+	//droite
+	if (key == 'd')
+	{
+		g_Avatar->droite = true;
+	}
+
+	//stand
+	
+
+	if (key == VK_SPACE)
+	{
+		g_Avatar->Jump = true;
+	}
+
+	if (key == VK_ESCAPE)
+	{
+		glutDestroyWindow(g_main_window_id);
 		exit(0);
 	}
 
-	if(key == 'f')
+	if (key == 'f')
 	{
-		if(!g_fullscreen){
+		if (!g_fullscreen){
 			glutFullScreen();
 			g_fullscreen = true;
-		} else if(g_fullscreen){
+		}
+		else if (g_fullscreen){
 			glutLeaveGameMode();
 			glutLeaveFullScreen();
 			glutReshapeWindow(g_renderer->_ScreenWidth, g_renderer->_ScreenWidth);
-			glutPositionWindow(0,0);
+			glutPositionWindow(0, 0);
 			g_fullscreen = false;
 		}
-	}	
+	}
 
-	if(key == 'c')
+	if (key == 'c')
 	{
 		g_lockCursor = !g_lockCursor;
-			
+
 	}
 }
 
 void keyboardUpFunction(unsigned char key, int p1, int p2)
 {
+	if (key == 'z')
+	{
+		g_Avatar->avance = false;
+	}
 
+	//Reculer
+	if (key == 's')
+	{
+		g_Avatar->recule = false;
+	}
+
+	//gauche
+	if (key == 'q')
+	{
+		g_Avatar->gauche = false;
+	}
+
+	//droite
+	if (key == 'd')
+	{
+		g_Avatar->droite = false;
+	}
+
+	//stand
+	if (key == 'x')
+	{
+		g_Avatar->Standing = false;
+	}
+
+	if (key == VK_SPACE)
+	{
+		g_Avatar->Jump = false;
+	}
 }
 
 void mouseWheelFunction(int wheel, int dir, int x, int y)
 {
-	
-		float speed = 20.0f;
-		if (wheel == 3)//up
-		{
-			g_renderer->_Camera->move(NYVert3Df(0, 0, speed*NYRenderer::_DeltaTime));
-		}
 
-		if (wheel == 4)//Down
-		{
-			g_renderer->_Camera->move(NYVert3Df(0, 0, -speed*NYRenderer::_DeltaTime));
-		}
-	
+	float speed = 20.0f;
+	if (wheel == 3)//up
+	{
+		g_renderer->_Camera->move(NYVert3Df(0, 0, speed*NYRenderer::_DeltaTime));
+	}
+
+	if (wheel == 4)//Down
+	{
+		g_renderer->_Camera->move(NYVert3Df(0, 0, -speed*NYRenderer::_DeltaTime));
+	}
+
 }
 
 void mouseFunction(int button, int state, int x, int y)
 {
 	//Gestion de la roulette de la souris
-	if((button & 0x07) == 3 && state)
-		mouseWheelFunction(button,1,x,y);
-	if((button & 0x07) == 4 && state)
-		mouseWheelFunction(button,-1,x,y);
+	if ((button & 0x07) == 3 && state)
+		mouseWheelFunction(button, 1, x, y);
+	if ((button & 0x07) == 4 && state)
+		mouseWheelFunction(button, -1, x, y);
 
 	//GUI
 	g_mouse_btn_gui_state = 0;
-	if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
 		g_mouse_btn_gui_state |= GUI_MLBUTTON;
-	
+
 	bool mouseTraite = false;
-	mouseTraite = g_screen_manager->mouseCallback(x,y,g_mouse_btn_gui_state,0,0);
+	mouseTraite = g_screen_manager->mouseCallback(x, y, g_mouse_btn_gui_state, 0, 0);
 }
 
 void mouseMoveFunction(int x, int y, bool pressed)
 {
+
+	if (pressed)
+	{
+		g_Avatar->clicked = true;
+	}
+	else
+	{
+		g_Avatar->clicked = false;
+	}
+
+
 	bool mouseTraite = false;
 
 	/*if (g_lockCursor)
@@ -540,8 +618,6 @@ void mouseMoveFunction(int x, int y, bool pressed)
 
 	static int PreviousX = 0;
 	static int PreviousY = 0;
-
-	
 
 	static int lastx = -1;
 	static int lasty = -1;
@@ -583,51 +659,51 @@ void mouseMoveFunction(int x, int y, bool pressed)
 		lastx = x;
 		lasty = y;
 
-		
-			NYVert3Df strafe = g_renderer->_Camera->_NormVec;
-			strafe.Z = 0;
-			strafe.normalize();
-			strafe *= (float)-dx / 50.0f;
 
-			NYVert3Df avance = g_renderer->_Camera->_Direction;
-			avance.Z = 0;
-			avance.normalize();
-			avance *= (float)dy / 50.0f;
+		NYVert3Df strafe = g_renderer->_Camera->_NormVec;
+		strafe.Z = 0;
+		strafe.normalize();
+		strafe *= (float)-dx / 50.0f;
 
-			g_renderer->_Camera->move(avance + strafe);
-		
+		NYVert3Df avance = g_renderer->_Camera->_Direction;
+		avance.Z = 0;
+		avance.normalize();
+		avance *= (float)dy / 50.0f;
+
+		g_renderer->_Camera->move(avance + strafe);
+
 	}
-	
-	
+
+
 	PreviousX = x;
 	PreviousY = y;
-	
-	
-	mouseTraite = g_screen_manager->mouseCallback(x,y,g_mouse_btn_gui_state,0,0);
-	if(pressed && mouseTraite)
+
+
+	mouseTraite = g_screen_manager->mouseCallback(x, y, g_mouse_btn_gui_state, 0, 0);
+	if (pressed && mouseTraite)
 	{
 		//Mise a jour des variables liées aux sliders
-		
+
 	}
 
 }
 
 void mouseMoveActiveFunction(int x, int y)
 {
-	mouseMoveFunction(x,y,true);
+	mouseMoveFunction(x, y, true);
 }
 void mouseMovePassiveFunction(int x, int y)
 {
-	mouseMoveFunction(x,y,false);
+	mouseMoveFunction(x, y, false);
 }
 
 
-void clickBtnParams (GUIBouton * bouton)
+void clickBtnParams(GUIBouton * bouton)
 {
 	g_screen_manager->setActiveScreen(g_screen_params);
 }
 
-void clickBtnCloseParam (GUIBouton * bouton)
+void clickBtnCloseParam(GUIBouton * bouton)
 {
 	g_screen_manager->setActiveScreen(g_screen_jeu);
 }
@@ -636,69 +712,69 @@ void clickBtnCloseParam (GUIBouton * bouton)
   * POINT D'ENTREE PRINCIPAL
   **/
 int main(int argc, char* argv[])
-{ 
+{
 	LogConsole::createInstance();
 
 	int screen_width = 800;
 	int screen_height = 600;
 
-	glutInit(&argc, argv); 
-	glutInitContextVersion(3,0);
+	glutInit(&argc, argv);
+	glutInitContextVersion(3, 0);
 	glutSetOption(
 		GLUT_ACTION_ON_WINDOW_CLOSE,
 		GLUT_ACTION_GLUTMAINLOOP_RETURNS
 		);
 
-	glutInitWindowSize(screen_width,screen_height);
-	glutInitWindowPosition (0, 0);
-	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA | GLUT_MULTISAMPLE );
+	glutInitWindowSize(screen_width, screen_height);
+	glutInitWindowPosition(0, 0);
+	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA | GLUT_MULTISAMPLE);
 
 	glEnable(GL_MULTISAMPLE);
 
-	Log::log(Log::ENGINE_INFO, (toString(argc) + " arguments en ligne de commande.").c_str());	
+	Log::log(Log::ENGINE_INFO, (toString(argc) + " arguments en ligne de commande.").c_str());
 	bool gameMode = true;
-	for(int i=0;i<argc;i++)
+	for (int i = 0; i < argc; i++)
 	{
-		if(argv[i][0] == 'w')
+		if (argv[i][0] == 'w')
 		{
-			Log::log(Log::ENGINE_INFO,"Arg w mode fenetre.\n");
+			Log::log(Log::ENGINE_INFO, "Arg w mode fenetre.\n");
 			gameMode = false;
 		}
 	}
 
-	if(gameMode)
+	if (gameMode)
 	{
 		int width = glutGet(GLUT_SCREEN_WIDTH);
 		int height = glutGet(GLUT_SCREEN_HEIGHT);
-		
+
 		char gameModeStr[200];
-		sprintf(gameModeStr,"%dx%d:32@60",width,height);
+		sprintf(gameModeStr, "%dx%d:32@60", width, height);
 		glutGameModeString(gameModeStr);
 		g_main_window_id = glutEnterGameMode();
 	}
 	else
 	{
 		g_main_window_id = glutCreateWindow("MyNecraft");
-		glutReshapeWindow(screen_width,screen_height);
+		glutReshapeWindow(screen_width, screen_height);
 	}
 
-	if(g_main_window_id < 1) 
+	if (g_main_window_id < 1)
 	{
-		Log::log(Log::ENGINE_ERROR,"Erreur creation de la fenetre.");
+		Log::log(Log::ENGINE_ERROR, "Erreur creation de la fenetre.");
 		exit(EXIT_FAILURE);
 	}
-	
+
 	GLenum glewInitResult = glewInit();
 
 	if (glewInitResult != GLEW_OK)
 	{
-		Log::log(Log::ENGINE_ERROR,("Erreur init glew " + std::string((char*)glewGetErrorString(glewInitResult))).c_str());
-		_cprintf("ERROR : %s",glewGetErrorString(glewInitResult));
+		Log::log(Log::ENGINE_ERROR, ("Erreur init glew " + std::string((char*)glewGetErrorString(glewInitResult))).c_str());
+		_cprintf("ERROR : %s", glewGetErrorString(glewInitResult));
 		exit(EXIT_FAILURE);
 	}
 
 	//Affichage des capacités du système
-	Log::log(Log::ENGINE_INFO,("OpenGL Version : " + std::string((char*)glGetString(GL_VERSION))).c_str());
+	Log::log(Log::ENGINE_INFO, ("OpenGL Version : " + std::string((char*)glGetString(GL_VERSION))).c_str());
 
 	glutDisplayFunc(update);
 	glutReshapeFunc(resizeFunction);
@@ -717,22 +793,22 @@ int main(int argc, char* argv[])
 	g_renderer->setRender2DFun(render2d);
 	//g_renderer->setLightsFun(setLights);
 	g_renderer->setLightsFun(setLightsBasedOnDayTime);
-	NYColor skyColor(0.f, 181.f / 255.f, 221.f / 255.f,0.f);
+	NYColor skyColor(0.f, 181.f / 255.f, 221.f / 255.f, 0.f);
 	//g_renderer->setBackgroundColor(skyColor);
 	g_renderer->setBackgroundColor(NYColor());
 	g_renderer->initialise();
 
 	//On applique la config du renderer
 	glViewport(0, 0, g_renderer->_ScreenWidth, g_renderer->_ScreenHeight);
-	g_renderer->resize(g_renderer->_ScreenWidth,g_renderer->_ScreenHeight);
-	
+	g_renderer->resize(g_renderer->_ScreenWidth, g_renderer->_ScreenHeight);
+
 	//Ecran de jeu
 	uint16 x = 10;
 	uint16 y = 10;
-	g_screen_jeu = new GUIScreen(); 
+	g_screen_jeu = new GUIScreen();
 
 	g_screen_manager = new GUIScreenManager();
-		
+
 	//Bouton pour afficher les params
 	BtnParams = new GUIBouton();
 	BtnParams->Titre = std::string("Params");
@@ -761,8 +837,8 @@ int main(int argc, char* argv[])
 	g_screen_params->addElement(btnClose);
 
 	y += btnClose->Height + 1;
-	y+=10;
-	x+=10;
+	y += 10;
+	x += 10;
 
 	GUILabel * label = new GUILabel();
 	label->X = x;
@@ -773,22 +849,22 @@ int main(int argc, char* argv[])
 	y += label->Height + 1;
 
 	g_slider = new GUISlider();
-	g_slider->setPos(x,y);
-	g_slider->setMaxMin(1,0);
+	g_slider->setPos(x, y);
+	g_slider->setMaxMin(1, 0);
 	g_slider->Visible = true;
 	g_slider->Value = 0.2;
 	g_screen_params->addElement(g_slider);
 
 	y += g_slider->Height + 1;
-	y+=10;
+	y += 10;
 
 	//Ecran a rendre
 	g_screen_manager->setActiveScreen(g_screen_jeu);
-	
+
 	//Init Camera
-	g_renderer->_Camera->setPosition(NYVert3Df(50,50,50));
-	g_renderer->_Camera->setLookAt(NYVert3Df(0,0,0));
-	
+	g_renderer->_Camera->setPosition(NYVert3Df(50, 50, 50));
+	g_renderer->_Camera->setLookAt(NYVert3Df(0, 0, 0));
+
 
 	//Fin init moteur
 
@@ -797,15 +873,18 @@ int main(int argc, char* argv[])
 	g_world = new NYWorld();
 	g_world->_FacteurGeneration = 1;
 	g_world->init_world();
-	
+
 
 	//Init Timer
 	g_timer = new NYTimer();
-	
+
+	//Init Avatar
+	g_Avatar = new NYAvatar(g_renderer->_Camera, g_world);
+
 	//On start
 	g_timer->start();
 
-	glutMainLoop(); 
+	glutMainLoop();
 
 	return 0;
 }
