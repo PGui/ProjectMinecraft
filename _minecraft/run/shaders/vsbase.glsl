@@ -11,7 +11,7 @@ void main()
 	{
 		gl_Vertex.z += sin(elapsed*1.0) / 5.0;
 	}
-	
+	gl_Vertex.z += (sin(elapsed*1.0 + gl_Vertex.x) + sin(elapsed*1.0 + gl_Vertex.y))/6.0f;
 	
 	// Transforming The Vertex
 	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;

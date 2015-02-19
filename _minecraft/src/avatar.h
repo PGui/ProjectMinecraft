@@ -42,7 +42,7 @@ public:
 	NYAvatar(NYCamera * cam, NYWorld * world)
 	{
 		Position = NYVert3Df(30, 30, 30);
-		Height = 0.7f;
+		Height = 0.5f;
 		Width = 0.5f;
 		Cam = cam;
 		avance = false;
