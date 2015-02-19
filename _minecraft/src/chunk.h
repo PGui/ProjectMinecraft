@@ -102,7 +102,7 @@ class NYChunk
 			glGenBuffers(1, &_BufWorld);
 			glBindBuffer(GL_ARRAY_BUFFER, _BufWorld);
 
-
+			_NbVertices = 0;
 			//Compute Nb Vertices
 			for (int x = 0; x < CHUNK_SIZE; x++)
 			{
@@ -129,7 +129,7 @@ class NYChunk
 									break;
 
 								case CUBE_EAU:
-									AddVector(Colors,0.0f, 0.0f, 8.0f);
+									AddVector(Colors,0.001f, 0.0f, 8.0f);
 									break;
 
 								default:

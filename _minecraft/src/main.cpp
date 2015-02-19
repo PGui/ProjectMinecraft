@@ -61,6 +61,8 @@ GUISlider * g_slider;
 //Avatar
 NYAvatar * g_Avatar = NULL;
 
+GLuint g_program;
+GLuint g_programWaves;
 
 //////////////////////////////////////////////////////////////////////////
 // GESTION APPLICATION
@@ -222,7 +224,7 @@ void renderObjects(void)
 
 
 	//Rendu des axes
-	/*glDisable(GL_LIGHTING);
+	glDisable(GL_LIGHTING);
 
 	glBegin(GL_LINES);
 	glColor3d(1, 0, 0);
@@ -234,7 +236,7 @@ void renderObjects(void)
 	glColor3d(0, 0, 1);
 	glVertex3d(0, 0, 0);
 	glVertex3d(0, 0, 10000);
-	glEnd();*/
+	glEnd();
 
 	//glEnable(GL_LIGHTING);
 	//glShadeModel(GL_SMOOTH);
@@ -278,10 +280,24 @@ void renderObjects(void)
 
 	//RENDER THE WORLD
 	//Au lieu de rendre notre cube dans sa sphère (mais on laisse le soleil)
+
+	glUseProgram(g_program);
+
+	GLuint elap = glGetUniformLocation(g_program, "elapsed");
+	glUniform1f(elap, NYRenderer::_DeltaTimeCumul);
+
+	GLuint amb = glGetUniformLocation(g_program, "ambientLevel");
+	glUniform1f(amb, 0.4);
+
+	GLuint invView = glGetUniformLocation(g_program, "invertView");
+	glUniformMatrix4fv(invView, 1, true, g_renderer->_Camera->_InvertViewMatrix.Mat.t);
+
 	glPushMatrix();
 	//g_world->render_world_old_school();
 	g_world->render_world_vbo();
 	glPopMatrix();
+
+	glUseProgram(0);
 
 	//RENDER THE AVATR
 	g_Avatar->render();
@@ -648,7 +664,7 @@ void mouseMoveFunction(int x, int y, bool pressed)
 			g_renderer->_Camera->rotateUp(-offsetY*NYRenderer::_DeltaTime*sensibility);
 		}
 	}
-	else
+	/*else
 	{
 
 		if (lastx == -1 && lasty == -1)
@@ -676,7 +692,7 @@ void mouseMoveFunction(int x, int y, bool pressed)
 
 		g_renderer->_Camera->move(avance + strafe);
 
-	}
+	}*/
 
 
 	PreviousX = x;
@@ -800,7 +816,11 @@ int main(int argc, char* argv[])
 	NYColor skyColor(0.f, 181.f / 255.f, 221.f / 255.f, 0.f);
 	//g_renderer->setBackgroundColor(skyColor);
 	g_renderer->setBackgroundColor(NYColor());
-	g_renderer->initialise();
+	g_renderer->initialise(true);
+
+	//Creation d'un programme de shader, avec vertex et fragment shaders
+	g_program = g_renderer->createProgram("shaders/psbase.glsl", "shaders/vsbase.glsl");
+	//g_programWaves = g_renderer->createProgram("shaders/psbase.glsl", "shaders/vsbase.glsl");
 
 	//On applique la config du renderer
 	glViewport(0, 0, g_renderer->_ScreenWidth, g_renderer->_ScreenHeight);

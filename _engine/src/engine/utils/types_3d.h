@@ -859,7 +859,7 @@ struct NYFloatMatrix
 	void createViewMatrix(NYVert3Df & pos, NYVert3Df & lookat, NYVert3Df & up)
 	{
 		createIdentite();
-		NYVert3Df R2 = lookat - pos;
+		NYVert3Df R2 = (lookat - pos)*-1.0f;
 		R2.normalize();
 		NYVert3Df R0(up.vecProd(R2));
 		R0.normalize();

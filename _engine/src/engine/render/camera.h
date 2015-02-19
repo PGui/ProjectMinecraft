@@ -16,6 +16,8 @@ class NYCamera
 		NYVert3Df _NormVec; ///< Si on se place dans la camera, indique la droite	
 		NYVert3Df _UpRef; ///< Ce qu'on considère comme le "haut" dans notre monde (et pas le up de la cam)
 
+		NYFloatMatrix _InvertViewMatrix;
+
 		NYCamera()
 		{
 			_Position = NYVert3Df(0,-1,0);

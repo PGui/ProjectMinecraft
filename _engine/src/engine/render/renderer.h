@@ -268,6 +268,9 @@ class NYRenderer
 				var = glGetUniformLocation(_ProgramPP, "screen_height");
 				glUniform1f(var, (float)_ScreenHeight);
 
+				GLfloat time = glGetUniformLocation(_ProgramPP, "elapsed");
+				glUniform1f(time, (float)NYRenderer::_DeltaTimeCumul);
+
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, _ColorTexPP);
 				glActiveTexture(GL_TEXTURE1);
@@ -373,7 +376,7 @@ class NYRenderer
 		{
 			glMatrixMode(GL_PROJECTION);
 			glLoadIdentity();
-			gluPerspective(45.0,((float)_ScreenWidth) / (float)_ScreenHeight, 0.5, 10000.0);
+			gluPerspective(45.0,((float)_ScreenWidth) / (float)_ScreenHeight, 0.01, 1000.0);
 			glMatrixMode(GL_MODELVIEW);	
 			glLoadIdentity();
 			_Camera->look();
