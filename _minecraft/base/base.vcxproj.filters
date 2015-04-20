@@ -9,6 +9,9 @@
       <Filter>engine\log</Filter>
     </ClCompile>
     <ClCompile Include="..\src\chunk.cpp" />
+    <ClCompile Include="..\..\..\..\..\Desktop\base\_engine\src\engine\sound\sound.cpp">
+      <Filter>engine\sounds</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="engine">
@@ -19,6 +22,9 @@
     </Filter>
     <Filter Include="engine\log">
       <UniqueIdentifier>{0a822301-530a-4ea3-9539-50b080a3d8da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="engine\sounds">
+      <UniqueIdentifier>{247c0786-406a-41ca-acdd-5b35c73554fb}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -42,5 +48,11 @@
     <ClInclude Include="..\src\cube.h" />
     <ClInclude Include="..\src\avatar.h" />
     <ClInclude Include="..\src\my_physics.h" />
+    <ClInclude Include="..\..\..\..\..\Desktop\base\_engine\src\engine\sound\granular_sound.h">
+      <Filter>engine\sounds</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\Desktop\base\_engine\src\engine\sound\sound.h">
+      <Filter>engine\sounds</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

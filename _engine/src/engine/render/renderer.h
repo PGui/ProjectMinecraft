@@ -359,7 +359,7 @@ class NYRenderer
 
 			if(error != 0)
 			{
-				switch(error)
+				/*switch(error)
 				{	
 				case GL_INVALID_ENUM: Log::log(Log::ENGINE_ERROR,("Opengl error (GL_INVALID_ENUM) for call " + toString(call)).c_str()); break;
 				case GL_INVALID_OPERATION: Log::log(Log::ENGINE_ERROR,("Opengl error (GL_INVALID_OPERATION) for call " + toString(call)).c_str()); break;
@@ -368,7 +368,7 @@ class NYRenderer
 				case GL_OUT_OF_MEMORY: Log::log(Log::ENGINE_ERROR,("Opengl error (GL_OUT_OF_MEMORY) for call " + toString(call)).c_str()); break;
 				case GL_TABLE_TOO_LARGE: Log::log(Log::ENGINE_ERROR,("Opengl error (GL_TABLE_TOO_LARGE) for call " + toString(call)).c_str()); break;
 				default : Log::log(Log::ENGINE_ERROR,("Unknown Opengl error for call " + toString(call)).c_str()); break; 
-				}
+				}*/
 			}
 		}
 

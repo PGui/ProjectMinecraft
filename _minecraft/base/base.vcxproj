@@ -11,12 +11,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\..\..\Desktop\base\_engine\src\engine\sound\sound.cpp" />
     <ClCompile Include="..\..\_engine\src\engine\log\log.cpp" />
     <ClCompile Include="..\..\_engine\src\engine\render\renderer.cpp" />
     <ClCompile Include="..\src\chunk.cpp" />
     <ClCompile Include="..\src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\..\Desktop\base\_engine\src\engine\sound\granular_sound.h" />
+    <ClInclude Include="..\..\..\..\..\Desktop\base\_engine\src\engine\sound\sound.h" />
     <ClInclude Include="..\..\_engine\src\engine\log\log.h" />
     <ClInclude Include="..\..\_engine\src\engine\log\log_console.h" />
     <ClInclude Include="..\..\_engine\src\engine\log\log_file.h" />
@@ -83,7 +86,7 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>libpng16.lib;libcurl.lib;openal32.lib;alut_d.lib;glew32.lib;freeglut.lib;Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libpng16.lib;libcurl.lib;openal32.lib;alut.lib;glew32.lib;freeglut.lib;Kernel32.lib;Psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../lib;../../_engine/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>

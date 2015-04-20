@@ -23,6 +23,9 @@
 
 #include "my_physics.h"
 
+#include "engine/sound/sound.h"
+#include "engine/sound/granular_sound.h"
+
 //Variable globale
 NYWorld * g_world;
 
@@ -49,20 +52,32 @@ float g_tweak_time = 0.f;
 bool g_fast_time = false;
 
 //GUI 
+GUISlider * g_slider;
+
+//GUI
 GUIScreenManager * g_screen_manager = NULL;
 GUIBouton * BtnParams = NULL;
 GUIBouton * BtnClose = NULL;
 GUILabel * LabelFps = NULL;
-GUILabel * LabelCam = NULL;
 GUIScreen * g_screen_params = NULL;
 GUIScreen * g_screen_jeu = NULL;
-GUISlider * g_slider;
+GUISlider * g_slider_random;
+GUISlider * g_slider_pos;
+GUISlider * g_slider_size;
+GUISlider * g_slider_overlap;
+GUISlider * g_slider_volume_ambiance;
 
 //Avatar
 NYAvatar * g_Avatar = NULL;
 
 GLuint g_program;
 GLuint g_programWaves;
+
+//Sons
+SoundEngine * g_sound_engine = NULL;
+SoundBasic * g_sound_ambiance;
+SoundBasic * g_sound_btn;
+SoundGrain * g_sound_grain;
 
 //////////////////////////////////////////////////////////////////////////
 // GESTION APPLICATION
@@ -88,6 +103,9 @@ void update(void)
 
 	//Update avatar
 	g_Avatar->update(elapsed);
+
+	//Update sounds
+	g_sound_engine->update(elapsed);
 }
 
 
@@ -394,6 +412,21 @@ void renderObjects(void)
 
 }
 
+void clickBtnPlayGrain(GUIBouton * bouton)
+{
+	if (g_sound_grain->isPlaying())
+	{
+		g_sound_grain->stop();
+		bouton->Titre = "Play Grains";
+	}
+	else
+	{
+		g_sound_grain->play();
+		bouton->Titre = "Stop Grains";
+	}
+
+}
+
 
 
 void setLights(void)
@@ -623,6 +656,15 @@ void mouseFunction(int button, int state, int x, int y)
 	{
 		g_Avatar->picking = false;
 	}
+
+
+	if (mouseTraite && state == GLUT_DOWN)
+		g_sound_btn->play();
+	if (mouseTraite)
+	{
+		g_sound_grain->setGrainParam((float)g_slider_pos->Value, (float)g_slider_size->Value, (float)g_slider_random->Value, (float)g_slider_overlap->Value);
+		g_sound_ambiance->setVolume((float)g_slider_volume_ambiance->Value);
+	}
 }
 
 void mouseMoveFunction(int x, int y, bool pressed)
@@ -632,6 +674,13 @@ void mouseMoveFunction(int x, int y, bool pressed)
 
 
 	bool mouseTraite = false;
+
+	mouseTraite = g_screen_manager->mouseCallback(x, y, g_mouse_btn_gui_state, 0, 0);
+	if (pressed && mouseTraite)
+	{
+		g_sound_grain->setGrainParam((float)g_slider_pos->Value, (float)g_slider_size->Value, (float)g_slider_random->Value, (float)g_slider_overlap->Value);
+		g_sound_ambiance->setVolume((float)g_slider_volume_ambiance->Value);
+	}
 
 	/*if (g_lockCursor)
 		glutWarpPointer(g_renderer->_ScreenWidth / 2.0f, g_renderer->_ScreenHeight / 2.0f);*/
@@ -819,7 +868,7 @@ int main(int argc, char* argv[])
 	g_renderer->initialise(true);
 
 	//Creation d'un programme de shader, avec vertex et fragment shaders
-	g_program = g_renderer->createProgram("shaders/psbase.glsl", "shaders/vsbase.glsl");
+	//g_program = g_renderer->createProgram("shaders/psbase.glsl", "shaders/vsbase.glsl");
 	//g_programWaves = g_renderer->createProgram("shaders/psbase.glsl", "shaders/vsbase.glsl");
 
 	//On applique la config du renderer
@@ -850,6 +899,7 @@ int main(int argc, char* argv[])
 	g_screen_jeu->addElement(LabelFps);
 
 	//Ecran de parametrage
+	//Ecran de parametrage
 	x = 10;
 	y = 10;
 	g_screen_params = new GUIScreen();
@@ -867,23 +917,90 @@ int main(int argc, char* argv[])
 	GUILabel * label = new GUILabel();
 	label->X = x;
 	label->Y = y;
-	label->Text = "Param :";
+	label->Text = "Ambiance :";
 	g_screen_params->addElement(label);
 
 	y += label->Height + 1;
 
-	g_slider = new GUISlider();
-	g_slider->setPos(x, y);
-	g_slider->setMaxMin(1, 0);
-	g_slider->Visible = true;
-	g_slider->Value = 0.2;
-	g_screen_params->addElement(g_slider);
+	g_slider_volume_ambiance = new GUISlider();
+	g_slider_volume_ambiance->setPos(x, y);
+	g_slider_volume_ambiance->setMaxMin(1, 0);
+	g_slider_volume_ambiance->Visible = true;
+	g_screen_params->addElement(g_slider_volume_ambiance);
 
-	y += g_slider->Height + 1;
+	y += g_slider_volume_ambiance->Height + 1;
 	y += 10;
+
+
+	GUIBouton * btnPlayGrain = new GUIBouton();
+	btnPlayGrain->Titre = std::string("Play Grains");
+	btnPlayGrain->X = x;
+	btnPlayGrain->Y = y;
+	btnPlayGrain->setOnClick(clickBtnPlayGrain);
+	g_screen_params->addElement(btnPlayGrain);
+
+	y += btnPlayGrain->Height + 1;
+
+	g_slider_pos = new GUISlider();
+	g_slider_pos->setPos(x, y);
+	g_slider_pos->setMaxMin(1, 0);
+	g_slider_pos->Visible = true;
+	g_screen_params->addElement(g_slider_pos);
+
+	y += g_slider_pos->Height + 1;
+
+	g_slider_size = new GUISlider();
+	g_slider_size->setPos(x, y);
+	g_slider_size->setMaxMin(1.0, 0.01);
+	g_slider_size->Visible = true;
+	g_screen_params->addElement(g_slider_size);
+
+	y += g_slider_size->Height + 1;
+
+	g_slider_overlap = new GUISlider();
+	g_slider_overlap->setPos(x, y);
+	g_slider_overlap->setMaxMin(0.95, -0.95);
+	g_slider_overlap->Visible = true;
+	g_screen_params->addElement(g_slider_overlap);
+
+	y += g_slider_overlap->Height + 1;
+
+	g_slider_random = new GUISlider();
+	g_slider_random->setPos(x, y);
+	g_slider_random->setMaxMin(1.0, 0);
+	g_slider_random->Visible = true;
+	g_screen_params->addElement(g_slider_random);
+
+	y += g_slider_random->Height + 1;
 
 	//Ecran a rendre
 	g_screen_manager->setActiveScreen(g_screen_jeu);
+
+	//On charge les sons
+	g_sound_engine = SoundEngine::getInstance();
+	g_sound_ambiance = new SoundBasic();
+	g_sound_ambiance->load("sound/snd_background_1.wav");
+	g_sound_ambiance->setVolume(0.2f);
+	g_slider_volume_ambiance->setValue(0.2);
+	g_sound_ambiance->_Loop = true;
+	g_sound_ambiance->play();
+	g_sound_engine->addSound(g_sound_ambiance);
+
+
+	g_sound_btn = new SoundBasic();
+	g_sound_btn->load("sound/snd_btn_1.wav");
+	g_sound_engine->addSound(g_sound_btn);
+
+	g_sound_grain = new SoundGrain();
+	g_sound_grain->loadBaseFile("sound/grain_2.wav");
+	g_sound_grain->_Loop = true;
+	g_sound_grain->setGrainParam(0.5f, 0.05f, 0.05f, 0.7f);
+	g_sound_engine->addSound(g_sound_grain);
+
+	g_slider_pos->setValue(0.5);
+	g_slider_size->setValue(0.05);
+	g_slider_random->setValue(0.05);
+	g_slider_overlap->setValue(0.7);
 
 	//Init Camera
 	g_renderer->_Camera->setPosition(NYVert3Df(50, 50, 50));
@@ -897,6 +1014,10 @@ int main(int argc, char* argv[])
 	g_world = new NYWorld();
 	g_world->_FacteurGeneration = 1;
 	g_world->init_world();
+
+	//Init sounds
+
+
 
 
 	//Init Timer
